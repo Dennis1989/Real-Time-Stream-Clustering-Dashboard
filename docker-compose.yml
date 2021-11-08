@@ -1,0 +1,121 @@
+version: "3.9"
+
+services:
+  frontend:
+    build: ./dashboard
+    image: textclust_dashboard
+    ports:
+      - "8050:8050"
+    environment: 
+      FLASK_ENV: "development"
+    volumes:
+      - ./dashboard/src:/textclust-frontend
+    depends_on: 
+      - backend
+
+  frontend_private:
+    build: ./dashboard
+    image: textclust_dashboard
+    ports:
+      - "8051:8050"
+    environment:
+      private_dashboard: "True"
+      FLASK_ENV: "development"
+    volumes:
+      - ./dashboard/src:/textclust-frontend
+    depends_on: 
+      - backend
+
+  backend:
+    build: ./textclust-backend
+    ports:
+      - "5000:5000"
+    depends_on: 
+      - db
+    volumes:
+      - ./textclust-backend/flaskserver:/textclust-backend/flaskserver
+    environment: 
+      FLASK_DEBUG: "1"
+      FLASK_ENV: "development"
+      FLASK_RUN: "THREADED=True"
+      RADIUS: "${RADIUS}"
+      MODEL: "${MODEL}"
+      FADING_FACTOR: "${FADING_FACTOR}"
+      VERBOSE: "${VERBOSE}"
+      TERMFADING: "${TERMFADING}"
+      REALTIME: "${REALTIME}"
+      AUTO_RADIUS: "${AUTO_RADIUS}"
+      AUTO_MERGE: "${AUTO_MERGE}"
+      TIME_GAP: "${TIME_GAP}"
+      MICRO_CLUSTER_DISTANCE_METRIC: "${MICRO_CLUSTER_DISTANCE_METRIC}"
+      MACRO_CLUSTER_DISTANCE_METRIC: "${MACRO_CLUSTER_DISTANCE_METRIC}"
+      MACRO_NUMBER: "${MACRO_NUMBER}"
+      MINIMUM_MICRO_CLUSTER_WEIGHT: "${MINIMUM_MICRO_CLUSTER_WEIGHT}"
+      IDF: "${IDF}"
+      LANGUAGE: "${LANGUAGE}"
+      N_GRAMS: "${N_GRAMS}"
+      STEMMING: "${STEMMING}"
+      HASHTAG_REMOVEL: "${HASHTAG_REMOVEL}"
+      USERNAMES_REMOVEL: "${USERNAMES_REMOVEL}"
+      STOPWORD_REMOVEL: "${STOPWORD_REMOVEL}"
+      PUNCTUATION_REMOVAL: "${PUNCTUATION_REMOVAL}"
+      URLS_REMOVE: "${URLS_REMOVE}"
+      LANGUAGES: "${LANGUAGES}"
+      KEYWORDS: "${KEYWORDS}"
+      TIME_UNIT: "${TIME_UNIT}"
+      WINDOW_SIZE: "${WINDOW_SIZE}"
+      EXCLUDE_TOKENS: "${EXCLUDE_TOKENS}"
+    command: python3 -m app
+  
+  db:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./data:/data/db
+  
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+  
+  celery:
+    build: ./textclust-backend
+    restart: always
+    command: celery -A app.celery worker
+    depends_on:     
+      - db
+      - backend
+    volumes:
+      - ./textclust-backend/flaskserver:/textclust-backend/flaskserver
+    environment:
+      FLASK_DEBUG: "1"
+      FLASK_ENV: "development"
+      FLASK_RUN: "THREADED=True"
+      RADIUS: "${RADIUS}"
+      MODEL: "${MODEL}"
+      FADING_FACTOR: "${FADING_FACTOR}"
+      VERBOSE: "${VERBOSE}"
+      TERMFADING: "${TERMFADING}"
+      REALTIME: "${REALTIME}"
+      AUTO_RADIUS: "${AUTO_RADIUS}"
+      AUTO_MERGE: "${AUTO_MERGE}"
+      TIME_GAP: "${TIME_GAP}"
+      MICRO_CLUSTER_DISTANCE_METRIC: "${MICRO_CLUSTER_DISTANCE_METRIC}"
+      MACRO_CLUSTER_DISTANCE_METRIC: "${MACRO_CLUSTER_DISTANCE_METRIC}"
+      MACRO_NUMBER: "${MACRO_NUMBER}"
+      MINIMUM_MICRO_CLUSTER_WEIGHT: "${MINIMUM_MICRO_CLUSTER_WEIGHT}"
+      IDF: "${IDF}"
+      LANGUAGE: "${LANGUAGE}"
+      N_GRAMS: "${N_GRAMS}"
+      STEMMING: "${STEMMING}"
+      HASHTAG_REMOVEL: "${HASHTAG_REMOVEL}"
+      USERNAMES_REMOVEL: "${USERNAMES_REMOVEL}"
+      STOPWORD_REMOVEL: "${STOPWORD_REMOVEL}"
+      PUNCTUATION_REMOVAL: "${PUNCTUATION_REMOVAL}"
+      URLS_REMOVE: "${URLS_REMOVE}"
+      LANGUAGES: "${LANGUAGES}"
+      KEYWORDS: "${KEYWORDS}"
+      TIME_UNIT: "${TIME_UNIT}"
+      WINDOW_SIZE: "${WINDOW_SIZE}"
+      EXCLUDE_TOKENS: "${EXCLUDE_TOKENS}"
