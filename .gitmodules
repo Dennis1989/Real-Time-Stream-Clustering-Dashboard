@@ -1,0 +1,4 @@
+[submodule "textclust-backend/textClustPy"]
+	path = textclust-backend/textClustPy
+	url = https://github.com/Dennis1989/textClustPy
+	branch = from_internal
